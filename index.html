@@ -1,50 +1,384 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Copy Hello</title>
-  <style>
-    body, html {
-      height: 100%;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
-    }
-    button {
-      padding: 15px 30px;
-      font-size: 18px;
-      cursor: pointer;
-      border: none;
-      border-radius: 5px;
-      background-color: #007bff;
-      color: white;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Copier le code</title>
+    <style>
+        body {
+            font-family: monospace;
+            background-color: #111;
+            color: #00ff00;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px;
+        }
+
+        .code-box {
+            background-color: #222;
+            padding: 20px;
+            border: 1px solid #00ff00;
+            width: 80%;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #00ff00;
+            color: #000;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #00cc00;
+        }
+    </style>
 </head>
 <body>
-  <button id="copyBtn">Copy script</button>
 
-  <script>
-    const copyBtn = document.getElementById('copyBtn');
-    copyBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText('hello').then(() => {
-        copyBtn.textContent = 'Copied!';
-        setTimeout(() => {
-          copyBtn.textContent = 'Copy "hello"';
-        }, 1500);
-      }).catch(err => {
-        alert('Failed to copy text: ' + err);
-      });
-    });
-  </script>
+    <h1>Copieur de code</h1>
+
+    <button onclick="copier()">Copier le code</button>
+
+    <script>
+        function copier() {
+            const code = `(function () {
+          'use strict';
+        
+          // --- Overlay HTML ---
+          let overlayHTML = \`
+            <div id="main_panel">
+              <div class="main_panel_content">
+                <br><br><input type="number" placeholder="Enter any level here (Visual)" id="anyLevel">
+                <br><br><div id="cloudSlider">
+                  <label>Hideout Opacity</label>
+                  <input type="range" min="0" max="1" step="0.01" value="0.5">
+                </div>
+                <br><br><div id="enemyLinesCheckbox">
+                  <input type="checkbox" checked>
+                  <label>Show predator + prey</label>
+                </div>
+                <div id="echolocationCheckbox">
+                  <input type="checkbox" checked>
+                  <label>Enable vision in the dark</label>
+                </div>
+                <hr>
+              </div>
+              <hr>
+              <p>ℹ Press Y to hide the main panel</p>
+            </div>
+        
+            <style>
+              *{
+                outline: none;
+              }
+        
+              input[type="range"] {
+                  accent-color: coral;
+              }
+        
+              #main_panel {
+                z-index: 10;
+                position: absolute;
+                top: 50%;
+                left: 0;
+                width: 20%;
+                padding: 12px 12px;
+                transition: 0.5s;
+                backdrop-filter: blur(5px);
+                border-radius: 0px 24px 24px 0px;
+                font-family: Arial, Helvetica, sans-serif;
+                transform: translateY(-50%);
+                background-color: rgba(255, 255, 255, 0.75);
+                -webkit-box-shadow: 0px 0px 32px 10px rgba(34, 60, 80, 0.2);
+                -moz-box-shadow: 0px 0px 32px 10px rgba(34, 60, 80, 0.2);
+                box-shadow: 0px 0px 32px 10px rgba(34, 60, 80, 0.2);
+              }
+        
+              .main_panel_content {
+                max-height: 420px;
+                overflow-y: auto;
+                padding: 12px 12px;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                white-space: normal;
+              }
+            </style>
+          \`;
+        
+          // --- Insert overlay into DOM ---
+          let overlay = document.createElement("div");
+          overlay.innerHTML = overlayHTML;
+          document.body.appendChild(overlay);
+        
+          // --- Logic to toggle panel visibility ---
+          let box = document.getElementById("main_panel");
+          box.style.opacity = "1";
+          document.addEventListener('keydown', (event) => {
+            if (event.keyCode == 89) { // 'Y' key
+              let opac = box.style.opacity;
+              box.style.opacity = (opac == 1) ? "0" : "1";
+            }
+          });
+        
+          // --- Input and slider logic ---
+        
+          let input = document.getElementById('anyLevel');
+          input.oninput = function () {
+            let level = parseInt(this.value);
+            if (!isNaN(level) && game && game.me) {
+              game.me.visualLevel = level;
+              game.me.level = level;
+            }
+          };
+        
+          // --- Animation frame loop ---
+          let animationFrameId;
+          const startAnimationFrame = (previousTimestamp = performance.now(), remainingFrameTime = 0) => {
+            let timeElapsedSinceLastFrame = performance.now() - previousTimestamp,
+              targetFrameInterval = 16.67 - timeElapsedSinceLastFrame + remainingFrameTime,
+              frameDelay = targetFrameInterval - (0 | targetFrameInterval);
+            animationFrameId = requestAnimationFrame(() => startAnimationFrame(previousTimestamp, frameDelay));
+          };
+          startAnimationFrame();
+          window.addEventListener("beforeunload", () => {
+            animationFrameId && cancelAnimationFrame(animationFrameId);
+          });
+        
+          // --- Echolocation (night vision) ---
+          let echolocationEnabled = true;
+          let visionInterval = null;
+        
+          function startEcholocation() {
+            if (!visionInterval) {
+              visionType = 1;
+              visionInterval = setInterval(() => {
+                if (echolocationEnabled) {
+                  visionType = 1;
+                }
+              }, 100);
+            }
+          }
+        
+          function stopEcholocation() {
+            if (visionInterval) {
+              clearInterval(visionInterval);
+              visionInterval = null;
+            }
+            visionType = 0;
+          }
+        
+          let echoCheckbox = document.getElementById("echolocationCheckbox").querySelector('input');
+          echoCheckbox.addEventListener("change", function () {
+            echolocationEnabled = this.checked;
+            if (echolocationEnabled) {
+              startEcholocation();
+            } else {
+              stopEcholocation();
+            }
+          });
+        
+          startEcholocation();
+        
+          // --- Fullscreen block logic ---
+          let fullscreenBlock = document.createElement("div");
+          fullscreenBlock.id = "fullscreen_block";
+          fullscreenBlock.style.position = "fixed";
+          fullscreenBlock.style.top = "0";
+          fullscreenBlock.style.left = "0";
+          fullscreenBlock.style.width = "100%";
+          fullscreenBlock.style.height = "100%";
+          fullscreenBlock.style.backgroundColor = "rgba(0, 0, 0, 0.24)";
+          fullscreenBlock.style.zIndex = "9999";
+          fullscreenBlock.style.display = "flex";
+          fullscreenBlock.style.justifyContent = "center";
+          fullscreenBlock.style.alignItems = "center";
+          fullscreenBlock.style.transition = "opacity 5s";
+        
+          let fullscreenText = document.createElement("div");
+          fullscreenText.textContent = ""; // Author name or message
+          fullscreenText.style.color = "white";
+          fullscreenText.style.fontFamily = "Arial, sans-serif";
+          fullscreenText.style.fontSize = "24px";
+        
+          fullscreenBlock.appendChild(fullscreenText);
+          document.body.appendChild(fullscreenBlock);
+        
+          setTimeout(() => {
+            fullscreenBlock.style.opacity = "0";
+            setTimeout(() => {
+              fullscreenBlock.remove();
+            }, 5000);
+          }, 0);
+        
+          // --- Script initialization ---
+          function waitForGameLoad() {
+            if (typeof game !== 'undefined' && game.canvas) {
+              initScript();
+            } else {
+              setTimeout(waitForGameLoad, 500);
+            }
+          }
+        
+          function initScript() {
+            console.log("Game loaded, initializing script...");
+        
+            let showEnemyLines = true;
+            let enemyLineColor = 'yellow';
+        
+            const cloudSlider = document.getElementById('cloudSlider').querySelector('input');
+            const enemyLinesCheckbox = document.getElementById('enemyLinesCheckbox').querySelector('input');
+        
+            function applyTransparency() {
+              const cloudAlpha = parseFloat(cloudSlider.value);
+              Object.values(game.gameObjects).forEach(obj => {
+                if (obj.name.includes('cloud') || obj.name === 'swamp' || obj.name.includes('bush')) {
+                  obj.opacity = cloudAlpha;
+                }
+              });
+            }
+        
+            const originalIsVisible = game.isVisible;
+            game.isVisible = function (camera, obj, originalWidth, originalHeight) {
+              if (obj.type === objectType.PLAYER && obj.inSafeZone) {
+                return true;
+              }
+              return originalIsVisible.call(this, camera, obj, originalWidth, originalHeight);
+            };
+        
+            function getDangerColor(canBeEaten, canEatMe, isSpecialDanger, isCaution) {
+              if ((canEatMe && canBeEaten) || isCaution) return 'orange';
+              if (canEatMe || isSpecialDanger) return 'red';
+              if (canBeEaten) return 'green';
+              return null;
+            }
+        
+            function isAlwaysDangerous(enemy) {
+              const dangerousNames = ['pumpkinGhost', 'grimReaper', 'ghostlyReaper'];
+              return dangerousNames.includes(enemy.name);
+            }
+        
+            function isCautionEnemy(enemy) {
+              const specialGroup = ['pumpkinGhost', 'grimReaper', 'ghostlyReaper'];
+              return (
+                specialGroup.includes(game.me.name) &&
+                specialGroup.includes(enemy.name) &&
+                enemy !== game.me
+              ) || (canEat(game.me, enemy) && canEat(enemy, game.me));
+            }
+        
+            function drawDangerLine(ctx, myPos, enemyPos, color) {
+              ctx.beginPath();
+              ctx.moveTo(myPos.x, myPos.y);
+              ctx.lineTo(enemyPos.x, enemyPos.y);
+              ctx.strokeStyle = color;
+              ctx.lineWidth = 2;
+              ctx.stroke();
+            }
+        
+            function drawDangerLabel(ctx, enemy) {
+              const topLeft = game.getRenderPosition(enemy.position.x, enemy.position.y);
+              const bottomRight = game.getRenderPosition(enemy.position.x + enemy.width, enemy.position.y + enemy.height);
+              const renderWidth = bottomRight.x - topLeft.x;
+              const renderHeight = bottomRight.y - topLeft.y;
+        
+              ctx.lineWidth = 2;
+              ctx.strokeRect(topLeft.x, topLeft.y, renderWidth, renderHeight);
+            }
+        
+            function drawEnemyLines() {
+              if (!showEnemyLines) return;
+        
+              const ctx = game.dynamicContext;
+              ctx.font = '14px Arial';
+              const extendedRenderDistance = game.worldWidth;
+        
+              Object.values(game.gameObjects).forEach(obj => {
+                if (
+                  obj.type === objectType.PLAYER &&
+                  obj !== game.me &&
+                  game.isVisible(game.camera, obj, extendedRenderDistance, extendedRenderDistance)
+                ) {
+                  const canBeEaten = canEat(game.me, obj);
+                  const canEatMe = canEat(obj, game.me);
+                  const specialDanger = isAlwaysDangerous(obj) &&
+                                        !(isAlwaysDangerous(game.me) && isAlwaysDangerous(obj));
+                  const caution = isCautionEnemy(obj);
+        
+                  const dangerColor = getDangerColor(canBeEaten, canEatMe, specialDanger, caution);
+                  if (!dangerColor) return;
+        
+                  const myPos = game.getRenderPosition(
+                    game.me.position.x + game.me.width / 2,
+                    game.me.position.y + game.me.height / 2
+                  );
+                  const enemyPos = game.getRenderPosition(
+                    obj.position.x + obj.width / 2,
+                    obj.position.y + obj.height / 2
+                  );
+        
+                  drawDangerLine(ctx, myPos, enemyPos, dangerColor);
+        
+                  const distance = Math.round(getDistance(
+                    game.me.position.x, game.me.position.y,
+                    obj.position.x, obj.position.y
+                  ));
+        
+                  ctx.fillStyle = 'white';
+                  ctx.fillText(\`\${distance}\`, (myPos.x + enemyPos.x) / 2, (myPos.y + enemyPos.y) / 2);
+                  ctx.strokeStyle = dangerColor;
+        
+                  drawDangerLabel(ctx, obj);
+                }
+              });
+            }
+        
+            const originalDrawObject = game.drawObject;
+            game.drawObject = function (obj, staticCanvas) {
+              if ((obj.name.includes('cloud') || obj.name === 'swamp' || obj.name.includes('bush')) && game.isVisible(game.camera, obj)) {
+                obj.opacity = parseFloat(cloudSlider.value);
+                staticCanvas = false;
+              }
+              originalDrawObject.call(this, obj, staticCanvas);
+            };
+        
+            cloudSlider.addEventListener('input', applyTransparency);
+            enemyLinesCheckbox.addEventListener('change', () => showEnemyLines = enemyLinesCheckbox.checked);
+        
+            const originalBeforeDrawAllObjects = game.beforeDrawAllObjects;
+            game.beforeDrawAllObjects = function () {
+              originalBeforeDrawAllObjects.apply(this, arguments);
+              drawEnemyLines();
+            };
+        
+            applyTransparency();
+          }
+        
+          function getDistance(x1, y1, x2, y2) {
+            let dx = x2 - x1;
+            let dy = y2 - y1;
+            return Math.sqrt(dx * dx + dy * dy);
+          }
+        
+          function canEat(eater, food) {
+            if (foodChain[eater.name] && foodChain[eater.name].eats[food.name]) {
+              return true;
+            }
+            return false;
+          }
+        
+          waitForGameLoad();
+        })();`;
+        
+            navigator.clipboard.writeText(code)
+              .then(() => alert("Code copié dans le presse-papiers !"))
+              .catch(err => alert("Échec de la copie : " + err));
+        }
+        </script>
+        
+
 </body>
 </html>
-
